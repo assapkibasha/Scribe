@@ -1,0 +1,2 @@
+# Scribe
+Schoolfees record system
