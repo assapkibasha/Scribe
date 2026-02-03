@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function DashboardLayout({
   children,
@@ -80,6 +84,34 @@ export default function DashboardLayout({
     },
   ];
 
+  const pathname = usePathname();
+
+  const initialOpenTitle = useMemo(() => {
+    const match = navSections.find((section) =>
+      section.items.some(
+        (item) => item.href !== "/dashboard" && pathname.startsWith(item.href)
+      )
+    );
+    return match?.title ?? null;
+  }, [pathname, navSections]);
+
+  const [openTitle, setOpenTitle] = useState<string | null>(initialOpenTitle);
+
+  useEffect(() => {
+    setOpenTitle(initialOpenTitle);
+  }, [initialOpenTitle]);
+
+  const isActiveHref = (href: string) => {
+    if (href === "/dashboard") return pathname === "/dashboard";
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
+  const isActiveSection = (title: string) => {
+    const section = navSections.find((s) => s.title === title);
+    if (!section) return false;
+    return section.items.some((i) => isActiveHref(i.href));
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <header className="sticky top-0 z-10 border-b border-zinc-100 bg-white/80 backdrop-blur">
@@ -109,20 +141,70 @@ export default function DashboardLayout({
           <nav className="space-y-5">
             {navSections.map((section) => (
               <div key={section.title} className="space-y-2">
-                <div className="px-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  {section.title}
-                </div>
-                <div className="space-y-1">
-                  {section.items.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
+                {section.items.length <= 1 ? (
+                  <>
+                    <div className="px-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                      {section.title}
+                    </div>
+                    {section.items.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
+                          isActiveHref(item.href)
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </>
+                ) : (
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpenTitle((current) =>
+                          current === section.title ? null : section.title
+                        )
+                      }
+                      className={`flex w-full items-center justify-between px-3 text-left text-xs font-semibold uppercase tracking-wide transition-colors ${
+                        isActiveSection(section.title) || openTitle === section.title
+                          ? "text-green-700"
+                          : "text-zinc-500"
+                      }`}
+                      aria-expanded={openTitle === section.title}
                     >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
+                      <span>{section.title}</span>
+                      <span
+                        className={`text-zinc-400 transition-transform ${
+                          openTitle === section.title ? "rotate-180" : ""
+                        }`}
+                      >
+                        ▾
+                      </span>
+                    </button>
+
+                    {openTitle === section.title ? (
+                      <div className="space-y-1">
+                        {section.items.map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
+                              isActiveHref(item.href)
+                                ? "bg-blue-50 text-blue-700"
+                                : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
+                            }`}
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                )}
               </div>
             ))}
           </nav>
