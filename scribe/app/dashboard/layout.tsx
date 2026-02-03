@@ -101,9 +101,20 @@ export default function DashboardLayout({
     setOpenTitle(initialOpenTitle);
   }, [initialOpenTitle]);
 
+  const activeHref = useMemo(() => {
+    const allItems = navSections.flatMap((s) => s.items);
+
+    const candidates = allItems.filter((item) => {
+      if (item.href === "/dashboard") return pathname === "/dashboard";
+      return pathname === item.href || pathname.startsWith(`${item.href}/`);
+    });
+
+    candidates.sort((a, b) => b.href.length - a.href.length);
+    return candidates[0]?.href ?? null;
+  }, [pathname, navSections]);
+
   const isActiveHref = (href: string) => {
-    if (href === "/dashboard") return pathname === "/dashboard";
-    return pathname === href || pathname.startsWith(`${href}/`);
+    return activeHref === href;
   };
 
   const isActiveSection = (title: string) => {
@@ -152,7 +163,7 @@ export default function DashboardLayout({
                         href={item.href}
                         className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
                           isActiveHref(item.href)
-                            ? "bg-blue-50 text-blue-700"
+                            ? "bg-green-50 text-green-700"
                             : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
                         }`}
                       >
@@ -169,11 +180,7 @@ export default function DashboardLayout({
                           current === section.title ? null : section.title
                         )
                       }
-                      className={`flex w-full items-center justify-between px-3 text-left text-xs font-semibold uppercase tracking-wide transition-colors ${
-                        isActiveSection(section.title) || openTitle === section.title
-                          ? "text-green-700"
-                          : "text-zinc-500"
-                      }`}
+                      className="flex w-full items-center justify-between px-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 transition-colors hover:text-zinc-700"
                       aria-expanded={openTitle === section.title}
                     >
                       <span>{section.title}</span>
@@ -198,7 +205,7 @@ export default function DashboardLayout({
                                 : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
                             }`}
                           >
-                            {item.label}
+                            <span className="pl-4">{item.label}</span>
                           </Link>
                         ))}
                       </div>
