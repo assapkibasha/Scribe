@@ -10,7 +10,7 @@ export default function Home() {
           <img
             src={`/higurascribe.jpg?v=${logoVersion}`}
             alt="Higura Scribe"
-            className="h-auto w-[min(720px,90vw)]"
+            className="h-auto w-[min(400px,90vw)]"
           />
         </Link>
       </main>
