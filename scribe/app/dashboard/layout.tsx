@@ -10,7 +10,7 @@ const NAV_SECTIONS: Array<{
   items: Array<{ label: string; href: string }>;
 }> = [
   {
-    title: "Dashboard",
+    title: ":)",
     items: [{ label: "Home", href: "/dashboard" }],
   },
   {
@@ -140,14 +140,28 @@ export default function DashboardLayout({
 
       <div className="mx-auto grid h-[calc(100vh-56px)] max-w-screen-2xl grid-cols-1 md:grid-cols-[260px_1fr]">
         <aside className="overflow-y-auto border-r border-zinc-100 bg-white px-3 py-4 overscroll-contain">
-          <nav className="space-y-5">
-            {NAV_SECTIONS.map((section) => (
-              <div key={section.title} className="space-y-2">
+          <nav>
+            {NAV_SECTIONS.map((section, index) => {
+              const isSingleLink = section.items.length <= 1;
+              const isDuplicateTitleLink =
+                isSingleLink &&
+                !!section.items[0] &&
+                section.items[0].label.trim().toLowerCase() ===
+                  section.title.trim().toLowerCase();
+
+              const showHeading = !isDuplicateTitleLink;
+              const isGrouped = !isSingleLink || showHeading;
+
+              const marginTop = index === 0 ? "" : isGrouped ? "mt-5" : "mt-1";
+
+              const singleLinkTypography =
+                "text-xs font-semibold uppercase tracking-wide";
+
+              return (
+              <div key={section.title} className={`${marginTop} space-y-1`}>
                 {section.items.length <= 1 ? (
                   <>
-                    {section.items[0] &&
-                    section.items[0].label.trim().toLowerCase() !==
-                      section.title.trim().toLowerCase() ? (
+                    {showHeading ? (
                       <div className="px-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
                         {section.title}
                       </div>
@@ -162,7 +176,15 @@ export default function DashboardLayout({
                             : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
                         }`}
                       >
-                        {item.label}
+                        <span
+                          className={
+                            isDuplicateTitleLink
+                              ? singleLinkTypography
+                              : "text-sm font-medium"
+                          }
+                        >
+                          {item.label}
+                        </span>
                       </Link>
                     ))}
                   </>
@@ -208,7 +230,8 @@ export default function DashboardLayout({
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </nav>
         </aside>
 
