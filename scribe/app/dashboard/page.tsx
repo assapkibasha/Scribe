@@ -4,13 +4,6 @@ export default function DashboardHomePage() {
   return (
     <div className="space-y-10">
       <section className="space-y-4">
-        <div>
-          <h1 className="text-xl font-semibold text-zinc-900">Dashboard</h1>
-          <p className="mt-1 text-sm text-zinc-600">
-            Quick overview and actions.
-          </p>
-        </div>
-
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-zinc-100 bg-white p-4">
             <div className="text-xs font-medium text-zinc-500">Students</div>

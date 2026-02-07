@@ -5,104 +5,81 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 
+const NAV_SECTIONS: Array<{
+  title: string;
+  items: Array<{ label: string; href: string }>;
+}> = [
+  {
+    title: "Dashboard",
+    items: [{ label: "Home", href: "/dashboard" }],
+  },
+  {
+    title: "Class",
+    items: [{ label: "Class", href: "/dashboard/class" }],
+  },
+  {
+    title: "Payments",
+    items: [{ label: "Payments", href: "/dashboard/payments" }],
+  },
+  {
+    title: "Term & Fees Setup",
+    items: [
+      { label: "Academic Structure", href: "/dashboard/setup/academic-structure" },
+      { label: "Term Fee Amount", href: "/dashboard/setup/term-fee" },
+    ],
+  },
+  {
+    title: "Reports",
+    items: [
+      { label: "Paid Students", href: "/dashboard/reports/paid" },
+      { label: "Partially Paid Students", href: "/dashboard/reports/partial" },
+      { label: "Unpaid Students", href: "/dashboard/reports/unpaid" },
+      { label: "Class Report", href: "/dashboard/reports/class" },
+      { label: "Collections Summary", href: "/dashboard/reports/collections" },
+    ],
+  },
+  {
+    title: "Promotions",
+    items: [
+      { label: "Promote Students", href: "/dashboard/promotions/promote" },
+      { label: "Repeat Students", href: "/dashboard/promotions/repeat" },
+      { label: "Promotion History", href: "/dashboard/promotions/history" },
+    ],
+  },
+  {
+    title: "SMS Center",
+    items: [
+      { label: "Send Reminders", href: "/dashboard/sms/reminders" },
+      { label: "SMS History", href: "/dashboard/sms/history" },
+      { label: "SMS Templates", href: "/dashboard/sms/templates" },
+    ],
+  },
+  {
+    title: "Users & Security",
+    items: [
+      { label: "Users", href: "/dashboard/admin/users" },
+      { label: "Roles & Permissions", href: "/dashboard/admin/roles" },
+      { label: "Audit Log", href: "/dashboard/admin/audit" },
+    ],
+  },
+  {
+    title: "Settings",
+    items: [
+      { label: "School Profile", href: "/dashboard/settings/school-profile" },
+      { label: "Data Backup/Export", href: "/dashboard/settings/backup-export" },
+    ],
+  },
+];
+
 export default function DashboardLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const navSections: Array<{
-    title: string;
-    items: Array<{ label: string; href: string }>;
-  }> = [
-    {
-      title: "Dashboard",
-      items: [{ label: "Home", href: "/dashboard" }],
-    },
-    {
-      title: "Students",
-      items: [
-        { label: "Student List", href: "/dashboard/students" },
-        { label: "Add Student", href: "/dashboard/students/add" },
-        { label: "Import Students (Excel)", href: "/dashboard/students/import" },
-      ],
-    },
-    {
-      title: "Payments",
-      items: [
-        { label: "Record Payment", href: "/dashboard/payments/record" },
-        { label: "Payment History / Ledger", href: "/dashboard/payments/history" },
-        { label: "Adjustments / Corrections", href: "/dashboard/payments/adjustments" },
-      ],
-    },
-    {
-      title: "Term & Fees Setup",
-      items: [
-        { label: "Academic Structure", href: "/dashboard/setup/academic-structure" },
-        { label: "Term Fee Amount", href: "/dashboard/setup/term-fee" },
-      ],
-    },
-    {
-      title: "Reports",
-      items: [
-        { label: "Paid Students", href: "/dashboard/reports/paid" },
-        { label: "Partially Paid Students", href: "/dashboard/reports/partial" },
-        { label: "Unpaid Students", href: "/dashboard/reports/unpaid" },
-        { label: "Class Report", href: "/dashboard/reports/class" },
-        { label: "Collections Summary", href: "/dashboard/reports/collections" },
-      ],
-    },
-    {
-      title: "Promotions",
-      items: [
-        { label: "Promote Students", href: "/dashboard/promotions/promote" },
-        { label: "Repeat Students", href: "/dashboard/promotions/repeat" },
-        { label: "Promotion History", href: "/dashboard/promotions/history" },
-      ],
-    },
-    {
-      title: "SMS Center",
-      items: [
-        { label: "Send Reminders", href: "/dashboard/sms/reminders" },
-        { label: "SMS History", href: "/dashboard/sms/history" },
-        { label: "SMS Templates", href: "/dashboard/sms/templates" },
-      ],
-    },
-    {
-      title: "Users & Security",
-      items: [
-        { label: "Users", href: "/dashboard/admin/users" },
-        { label: "Roles & Permissions", href: "/dashboard/admin/roles" },
-        { label: "Audit Log", href: "/dashboard/admin/audit" },
-      ],
-    },
-    {
-      title: "Settings",
-      items: [
-        { label: "School Profile", href: "/dashboard/settings/school-profile" },
-        { label: "Data Backup/Export", href: "/dashboard/settings/backup-export" },
-      ],
-    },
-  ];
-
   const pathname = usePathname();
 
-  const initialOpenTitle = useMemo(() => {
-    const match = navSections.find((section) =>
-      section.items.some(
-        (item) => item.href !== "/dashboard" && pathname.startsWith(item.href)
-      )
-    );
-    return match?.title ?? null;
-  }, [pathname, navSections]);
-
-  const [openTitle, setOpenTitle] = useState<string | null>(initialOpenTitle);
-
-  useEffect(() => {
-    setOpenTitle(initialOpenTitle);
-  }, [initialOpenTitle]);
-
   const activeHref = useMemo(() => {
-    const allItems = navSections.flatMap((s) => s.items);
+    const allItems = NAV_SECTIONS.flatMap((s) => s.items);
 
     const candidates = allItems.filter((item) => {
       if (item.href === "/dashboard") return pathname === "/dashboard";
@@ -111,20 +88,34 @@ export default function DashboardLayout({
 
     candidates.sort((a, b) => b.href.length - a.href.length);
     return candidates[0]?.href ?? null;
-  }, [pathname, navSections]);
+  }, [pathname]);
+
+  const initialOpenTitle = useMemo(() => {
+    if (!activeHref || activeHref === "/dashboard") return null;
+    const match = NAV_SECTIONS.find((section) =>
+      section.items.some((item) => item.href === activeHref)
+    );
+    return match?.title ?? null;
+  }, [activeHref]);
+
+  const [openTitle, setOpenTitle] = useState<string | null>(initialOpenTitle);
+
+  useEffect(() => {
+    setOpenTitle(initialOpenTitle);
+  }, [initialOpenTitle]);
 
   const isActiveHref = (href: string) => {
     return activeHref === href;
   };
 
   const isActiveSection = (title: string) => {
-    const section = navSections.find((s) => s.title === title);
+    const section = NAV_SECTIONS.find((s) => s.title === title);
     if (!section) return false;
     return section.items.some((i) => isActiveHref(i.href));
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="h-screen overflow-hidden overscroll-none bg-white">
       <header className="sticky top-0 z-10 border-b border-zinc-100 bg-white/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-screen-2xl items-center justify-between px-4">
           <div className="flex items-center gap-3">
@@ -147,16 +138,20 @@ export default function DashboardLayout({
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-screen-2xl grid-cols-1 md:grid-cols-[260px_1fr]">
-        <aside className="border-r border-zinc-100 bg-white px-3 py-4">
+      <div className="mx-auto grid h-[calc(100vh-56px)] max-w-screen-2xl grid-cols-1 md:grid-cols-[260px_1fr]">
+        <aside className="overflow-y-auto border-r border-zinc-100 bg-white px-3 py-4 overscroll-contain">
           <nav className="space-y-5">
-            {navSections.map((section) => (
+            {NAV_SECTIONS.map((section) => (
               <div key={section.title} className="space-y-2">
                 {section.items.length <= 1 ? (
                   <>
-                    <div className="px-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                      {section.title}
-                    </div>
+                    {section.items[0] &&
+                    section.items[0].label.trim().toLowerCase() !==
+                      section.title.trim().toLowerCase() ? (
+                      <div className="px-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                        {section.title}
+                      </div>
+                    ) : null}
                     {section.items.map((item) => (
                       <Link
                         key={item.href}
@@ -185,7 +180,7 @@ export default function DashboardLayout({
                     >
                       <span>{section.title}</span>
                       <span
-                        className={`text-zinc-400 transition-transform ${
+                        className={`text-green-400 transition-transform ${
                           openTitle === section.title ? "rotate-180" : ""
                         }`}
                       >
@@ -217,7 +212,9 @@ export default function DashboardLayout({
           </nav>
         </aside>
 
-        <main className="min-h-[calc(100vh-56px)] px-4 py-8">{children}</main>
+        <main className="h-full overflow-y-auto px-4 py-8 overscroll-contain">
+          {children}
+        </main>
       </div>
     </div>
   );
